@@ -71,7 +71,26 @@ def _gen_splits(config):
         ]
         return split
 
-    train_split = build_split(train_videos)
+    def add_backg(train_split):
+        count = 0
+        bckg = []
+        for i in train_split:
+            if count==0:                 #for the first video in the training list
+               bckg.append(tuple([i[0]] + [0] + [1] + [i[2]-1]))
+               count +=1
+               last_video = tuple([i[0]]+[i[3]])
+               continue
+            if last_video[0] == i[0]:    #adding background for the same video
+               bckg.append(tuple([i[0]] + [0] + [last_video[1]+1] + [i[2]-1]))
+            else:                        #adding background when the video changes in the training list
+               bckg.append(tuple([i[0]] + [0] + [1] + [i[2]-1]))
+            last_video = tuple([i[0]]+[i[3]])
+            count +=1
+        return bckg
+
+    train_split_actions = build_split(train_videos)
+    background_split = add_bckg(train_split_actions)
+    train_split = train_split_actions + background_split
     validation_split = build_split(validation_videos)
     test_split = build_split(test_videos)
     return train_split, validation_split, test_split

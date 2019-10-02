@@ -42,42 +42,17 @@ def build(config, dataset, CW):
             csv_logger = CSVLogger(os.path.join(config.experiment_dir, config.experiment_name + '.csv'))
 
             if self.class_weight == "True":
-                print("CW")
-                # names = [i.strip() for i in open("/data/stars/user/rdai/smarthomes/split_iccv_2019/shuf_train_CS_32Labels.txt").readlines()]
-                # names = [os.path.splitext(i)[0] for i in names]
-                # y_train = np.array([int(name_to_int(i.split('')[0])) for i in (names)]) - 1
-                names = [i.strip() for i in open("../data/pku_mmd_label_map.txt").readlines()]
-                label_dict = {}
-                label_dict['background'] = 0
-                idx = 1
-                for i in names:
-                    label_dict[i] = idx
-                    idx += 1
-                y_train = np.array(label_dict.values())
-                print("ytrain")
-                print(y_train)
+                print("Class weighting will be performed to handle background videos")
+                class_weight = np.load('/data/stars/user/sdas/PKU-MMD/scripts/data/class_weights.npy')
 
-                class_weight = compute_class_weight(class_weight='balanced', classes=np.unique(y_train), y=y_train)
-
+            model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
             parallel_model = keras.utils.multi_gpu_model(model, gpus=config.num_gpus)
             parallel_model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+            model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
             # model_checkpoint = contrib.utils.CustomModelCheckpoint(model, os.path.join(config.weights_dir, 'epoch'))
             model_checkpoint = contrib.utils.CustomModelCheckpoint(parallel_model, os.path.join(config.weights_dir, 'epoch'))
 
-            """
-            model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-            
-            model.fit_generator(
-                generator=self.train_generator,
-                validation_data=self.validation_generator,
-                epochs=config.num_epochs,
-                callbacks=[csv_logger, reduce_lr, model_checkpoint],
-                max_queue_size=48,
-                workers=multiprocessing.cpu_count() - 2,
-                use_multiprocessing=True
-            )
-            """
             if self.class_weight == "True":
                 print("CW_fit")
                 parallel_model.fit_generator(
