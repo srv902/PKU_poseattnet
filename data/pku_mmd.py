@@ -135,7 +135,7 @@ class PKUMMDRgb(PKUMMDBase):
         x = np.array(x, np.float32)
         x /= 127.5
         x -= 1
-        y = np.array([sample[1] for sample in selection]) - 1
+        y = np.array([sample[1] for sample in selection]) #bckg is already 0
         y = keras.utils.to_categorical(y, num_classes=NUM_CLASSES)
         return x, y
 
