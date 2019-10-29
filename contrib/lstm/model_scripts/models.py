@@ -24,3 +24,19 @@ def build_model_with_TS(n_neuron, n_dropout, batch_size, timesteps, data_dim, nu
     model.add(TimeDistributed(Dense(num_classes, activation='softmax')))
     return model
 
+def Sequence_decoder(n_neuron, n_dropout, data_dim, num_classes):
+    print('Build GRU model!!!')
+    model = Sequential()
+    model.add(GRU(n_neuron, return_sequences=True, input_shape=(None, data_dim)))
+    model.add(Dropout(n_dropout))
+    model.add(Dense(num_classes, activation='softmax'))
+    return model
+
+def Sequence_decoder_LSTM(n_neuron, n_dropout, data_dim, num_classes):
+    print('Build LSTM model!!!')
+    model = Sequential()
+    model.add(LSTM(n_neuron, return_sequences=True, input_shape=(None, data_dim)))
+    model.add(Dropout(n_dropout))
+    model.add(Dense(num_classes, activation='softmax'))
+    return model
+
