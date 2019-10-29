@@ -1,4 +1,4 @@
-### Output files for PKU evaluation are at
+### Output files for PKU evaluation
 https://www.dropbox.com/sh/jk1mf3prgr3lje1/AACEyqq2Ob84lR6pVf-nKnQ5a?dl=0
 
 ## Demo 
