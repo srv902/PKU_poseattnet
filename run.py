@@ -11,6 +11,7 @@ import tensorflow as tf
 import data.factory
 import experiments.i3d
 import experiments.lstm
+import experiments.poseattnet
 import debug
 
 
@@ -29,6 +30,16 @@ parser.add_argument('--log_dir', dest='log_dir', default=None, type=str)
 parser.add_argument('--num_gpus', dest='num_gpus', default=2, type=int)
 parser.add_argument('--gpus', dest='gpus', default="False", type=str)
 parser.add_argument('--class_weight', dest='class_weight', default="False", type=str)
+parser.add_argument('--mode', dest='mode', default="train", type=str)
+parser.add_argument('--feature_extract', dest='feature_extract', default="False", type=str)
+parser.add_argument('--use_predict', dest='use_predict', default="False", type=str)
+parser.add_argument('--stack_size', dest='stack_size', default=64, type=int)   # not yet activated!!
+
+# flags for PoseAttNet
+parser.add_argument('--protocol', dest='protocol', default="CS", type=str)
+parser.add_argument('--timesteps', dest='timesteps', default=16, type=int)
+parser.add_argument('--n_neuron', dest='n_neuron', default=64, type=int)
+parser.add_argument('--n_dropout', dest='n_dropout', default=0.3, type=float)
 
 # Dahlia flags
 parser.add_argument('--dahlia_train_path', dest='dahlia_train_path', default=None, type=str)
@@ -45,6 +56,7 @@ parser.add_argument('--pku_mmd_skeletons_dir', dest='pku_mmd_skeletons_dir', def
 parser.add_argument('--pku_mmd_labels_dir', dest='pku_mmd_labels_dir', default=None, type=str)
 parser.add_argument('--pku_mmd_splits_dir', dest='pku_mmd_splits_dir', default=None, type=str)
 parser.add_argument('--pku_mmd_modality', dest='pku_mmd_modality', default=None, type=str)
+parser.add_argument('--use_ntu_weights', dest='use_ntu_weights', default=None, type=str)
 
 # LSTM flags
 parser.add_argument('--dropout', dest='dropout', default=0.5, type=float)
@@ -52,15 +64,16 @@ parser.add_argument('--time_steps', dest='time_steps', default=30, type=int)
 parser.add_argument('--num_neurons', dest='num_neurons', default=512, type=int)
 parser.add_argument('--data_size', dest='data_size', default=128, type=int)
 
-
-
-
 FLAGS = parser.parse_args()
 
 DATASET_NAME = FLAGS.dataset_name
 MODEL = FLAGS.model
 CW = FLAGS.class_weight
 gpus = FLAGS.gpus
+mode = FLAGS.mode
+feat_extract = FLAGS.feature_extract
+use_predict = FLAGS.use_predict
+
 
 NUM_EPOCHS = FLAGS.num_epochs
 BATCH_SIZE = FLAGS.batch_size
@@ -74,17 +87,21 @@ FLAGS.__setattr__('weights_dir', WEIGHTS_DIR)
 
 
 if not os.path.exists(EXPERIMENT_DIR):
-    os.makedirs(EXPERIMENT_DIR)
+    if feat_extract == "False" or use_predict == "False":
+        os.makedirs(EXPERIMENT_DIR)
 
 if not os.path.exists(WEIGHTS_DIR):
-    os.makedirs(WEIGHTS_DIR)
+    if feat_extract == "False" or use_predict == "False":
+        os.makedirs(WEIGHTS_DIR)
 
 dataset = data.factory.get_dataset(DATASET_NAME)
 
 if MODEL == 'lstm':
     experiment = experiments.lstm.build(FLAGS, dataset)
 elif MODEL == 'i3d':
-    experiment = experiments.i3d.build(FLAGS, dataset, CW)
+    experiment = experiments.i3d.build(FLAGS, dataset)
+elif MODEL == "poseattnet":
+    experiment = experiments.poseattnet.build(FLAGS, dataset)
 else:
     raise ValueError('Model %s not recognized' % MODEL)
 
