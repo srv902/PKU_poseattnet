@@ -57,38 +57,39 @@ def create_demo(label, vidname):
         frameid = "%05d" % i
         srcfileid = os.path.join(IMAGE_PATH, vidname, str(frameid)+'.jpg')
         destfileid = os.path.join(SAVE_PATH, vidname, str(frameid)+'.jpg')
+
+        img = cv2.imread(srcfileid)
+        win_H, win_W = 540, 640
+        window = np.full((win_H, win_W, 3), 210, np.uint8)
+        new_window = window.copy()
+        start = win_H - img.shape[0]
+        end = win_W - img.shape[1]
+        new_window[0:img.shape[0], end:win_W, :] = img
+        labelpos = 500
+
         if i not in label.keys():
-            copyfile(srcfileid, destfileid)
+            cv2.putText(new_window, "Prediction: Background", (135, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+            cv2.putText(new_window, "Groundtruth: Background", (115, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+            # copyfile(srcfileid, destfileid)
         else:
             # print("Updating the frame with gt and pred")
-            img = cv2.imread(srcfileid)
 
-            #"""
-            win_H, win_W = 540, 640
-            window = np.full((win_H, win_W, 3), 210, np.uint8)
-            # print("window shape ",window.shape)
-            new_window = window.copy()
-            start = win_H - img.shape[0]
-            end = win_W - img.shape[1]
-            new_window[0:img.shape[0], end:win_W, :] = img
-            # """
-            # new_window = img
-            labelpos = 500
             tolabel = label[i]
 
             pred1 = [i for i in tolabel if i[2] == 'pred']
             gt1 = [i for i in tolabel if i[2] == 'gt']
 
             if len(gt1) == 1 and len(pred1) == 1:
-                cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (100, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
-                cv2.putText(new_window, "Actual: " + gt1[0][0], (130, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
+                cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (135, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+                cv2.putText(new_window, "Groundtruth: " + gt1[0][0], (115, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
             elif len(gt1) == 0 and len(pred1) == 1:
-                cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (100, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
-                cv2.putText(new_window, "Actual: Background", (130, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
+                cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (135, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
+                cv2.putText(new_window, "Groundtruth: Background", (115, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
             elif len(gt1) == 1 and len(pred1) == 0:
-                cv2.putText(new_window, "Actual: " + tolabel[0][0], (130, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
+                cv2.putText(new_window, "Prediction: Background", (135, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
+                cv2.putText(new_window, "Groundtruth: " + tolabel[0][0], (115, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
 
-            cv2.imwrite(destfileid, new_window)
+        cv2.imwrite(destfileid, new_window)
 
 
 # prediction demo generator below
