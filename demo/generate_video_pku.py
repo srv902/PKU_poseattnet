@@ -5,6 +5,8 @@
 #
 ##################################
 
+# ffmpeg used to convert frames to video ffmpeg -r 30 -i modified_frames/0319-M/%5d.jpg -vb 20M myvideo.mpg
+
 import pandas as pd
 import numpy as np
 import pickle
@@ -68,8 +70,8 @@ def create_demo(label, vidname):
         labelpos = 500
 
         if i not in label.keys():
-            cv2.putText(new_window, "Prediction: Background", (135, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
-            cv2.putText(new_window, "Groundtruth: Background", (115, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+            cv2.putText(new_window, "Prediction: Background", (130, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+            cv2.putText(new_window, "Groundtruth: Background", (112, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
             # copyfile(srcfileid, destfileid)
         else:
             # print("Updating the frame with gt and pred")
@@ -80,14 +82,14 @@ def create_demo(label, vidname):
             gt1 = [i for i in tolabel if i[2] == 'gt']
 
             if len(gt1) == 1 and len(pred1) == 1:
-                cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (135, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
-                cv2.putText(new_window, "Groundtruth: " + gt1[0][0], (115, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+                cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (130, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+                cv2.putText(new_window, "Groundtruth: " + gt1[0][0], (112, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
             elif len(gt1) == 0 and len(pred1) == 1:
-                cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (135, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
-                cv2.putText(new_window, "Groundtruth: Background", (115, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+                cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (130, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
+                cv2.putText(new_window, "Groundtruth: Background", (112, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
             elif len(gt1) == 1 and len(pred1) == 0:
-                cv2.putText(new_window, "Prediction: Background", (135, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
-                cv2.putText(new_window, "Groundtruth: " + tolabel[0][0], (115, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+                cv2.putText(new_window, "Prediction: Background", (130, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
+                cv2.putText(new_window, "Groundtruth: " + tolabel[0][0], (112, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
 
         cv2.imwrite(destfileid, new_window)
 
