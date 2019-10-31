@@ -75,10 +75,12 @@ def create_demo(label, vidname):
         end = win_W - img.shape[1]
         new_window[0:img.shape[0], end:win_W, :] = img
         labelpos = 500
+        predpos = 130
+        gtpos = 112
 
         if i not in label.keys():
-            cv2.putText(new_window, "Prediction: Background", (130, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
-            cv2.putText(new_window, "Groundtruth: Background", (112, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+            cv2.putText(new_window, "Prediction: Background", (predpos, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+            cv2.putText(new_window, "Groundtruth: Background", (gtpos, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
             # copyfile(srcfileid, destfileid)
         else:
             # print("Updating the frame with gt and pred")
@@ -89,14 +91,31 @@ def create_demo(label, vidname):
             gt1 = [i for i in tolabel if i[2] == 'gt']
 
             if len(gt1) == 1 and len(pred1) == 1:
-                cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (130, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
-                cv2.putText(new_window, "Groundtruth: " + gt1[0][0], (112, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+                if len(pred1[0][0]) > 30:
+                    # print("big text")
+                    predpos = 70
+                    gtpos = 52
+
+                if pred1[0][0] == gt1[0][0]:
+                    cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (predpos, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+                    cv2.putText(new_window, "Groundtruth: " + gt1[0][0], (gtpos, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+                else:
+                    cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (predpos, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
+                    cv2.putText(new_window, "Groundtruth: " + gt1[0][0], (gtpos, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
             elif len(gt1) == 0 and len(pred1) == 1:
-                cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (130, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
-                cv2.putText(new_window, "Groundtruth: Background", (112, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+                if len(pred1[0][0]) > 30:
+                    # print("big text")
+                    predpos = 70
+                    gtpos = 52
+                cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (predpos, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
+                cv2.putText(new_window, "Groundtruth: Background", (gtpos, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
             elif len(gt1) == 1 and len(pred1) == 0:
-                cv2.putText(new_window, "Prediction: Background", (130, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
-                cv2.putText(new_window, "Groundtruth: " + tolabel[0][0], (112, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+                if len(gt1[0][0]) > 30:
+                    # print("big text")
+                    predpos = 70
+                    gtpos = 52
+                cv2.putText(new_window, "Prediction: Background", (predpos, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
+                cv2.putText(new_window, "Groundtruth: " + tolabel[0][0], (gtpos, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
 
         cv2.imwrite(destfileid, new_window)
 
