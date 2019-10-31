@@ -1,0 +1,52 @@
+Actions in PKU-MMD,I3DBaseline,PoseAttNet
+bow,0.82,0.89
+brushing hair,0.98,1.0
+brushing teeth,0.95,0.98
+check time (from watch),0.84,0.84
+cheer up,0.96,0.91
+clapping,0.47,0.67
+cross hands in front (say stop),0.86,0.72
+drink water,0.98,0.96
+drop,0.84,0.83
+eat meal/snack,0.98,1.0
+falling,0.97,0.93
+giving something to other person,0.99,1.0
+hand waving,0.73,0.91
+handshaking,0.96,1.0
+hopping (one foot jumping),0.79,0.88
+hugging other person,0.99,1.0
+jump up,0.83,0.81
+kicking other person,0.96,0.96
+kicking something,0.91,0.91
+make a phone call/answer phone,0.72,0.78
+pat on back of other person,0.78,0.91
+pickup,0.91,0.92
+playing with phone/tablet,0.88,0.88
+point finger at the other person,0.9,0.83
+pointing to something with finger,0.85,0.91
+punching/slapping other person,0.81,0.82
+pushing other person,0.87,0.98
+put on a hat/cap,0.94,0.98
+put something inside pocket,0.75,0.71
+reading,0.96,0.98
+rub two hands together,0.36,0.82
+salute,0.91,0.93
+sitting down,0.97,1.0
+standing up,0.88,0.65
+take off a hat/cap,0.96,0.98
+take off glasses,0.84,0.84
+take off jacket,0.99,0.95
+take out something from pocket,0.79,0.74
+taking a selfie,0.95,0.98
+tear up paper,0.78,0.83
+throw,0.69,0.87
+touch back (backache),0.85,0.88
+touch chest (stomachache/heart pain),0.81,0.81
+touch head (headache),0.62,0.63
+touch neck (neckache),0.85,0.91
+typing on a keyboard,0.85,0.87
+use a fan (with hand or paper)/feeling warm,1.0,1.0
+wear jacket,0.99,0.99
+wear on glasses,0.95,0.98
+wipe face,0.93,0.95
+writing,0.87,0.87
