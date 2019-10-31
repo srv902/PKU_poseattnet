@@ -3,9 +3,10 @@
 # PKU demo generator
 # Written by: Saurav Sharma
 #
+# ffmpeg used to convert frames to video || -->  ffmpeg -r 30 -i modified_frames/0319-M/%5d.jpg -vb 20M myvideo.mpg
+#
+#
 ##################################
-
-# ffmpeg used to convert frames to video ffmpeg -r 30 -i modified_frames/0319-M/%5d.jpg -vb 20M myvideo.mpg
 
 import pandas as pd
 import numpy as np
@@ -13,12 +14,18 @@ import pickle
 import cv2
 from collections import OrderedDict
 import os
+import argparse
 from shutil import copyfile
 
 IMAGE_PATH = '/data/stars/user/sasharma/PKU_poseattnet/demo/original_frames'
 SAVE_PATH = '/data/stars/user/sasharma/PKU_poseattnet/demo/modified_frames'
 ACTION_LABEL_FILE = '../data/pku_mmd_label_map.txt'
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Parser for generating demo')
+    parser.add_argument('--videoname', type=str, help='videoname for generating demo')
+    args = parser.parse_args()
+    return args
 
 def get_class_name():
     actions = pd.read_csv(ACTION_LABEL_FILE, header=None)
@@ -96,6 +103,7 @@ def create_demo(label, vidname):
 
 # prediction demo generator below
 if __name__ == "__main__":
+    args = parse_args()
     # pickle filenames for gt and pred
     gtfilename = "ground_truth_dfnew.pkl"
     predfilename = "merged_predictions.pkl"
@@ -105,7 +113,7 @@ if __name__ == "__main__":
     predfile = pickle.load(open(predfilename, 'rb'))
 
     # select the video whose demo is desired
-    videotofilter = '0319-M'
+    videotofilter = args.videoname
     gtselect = gtfile[gtfile['video-id'] == videotofilter]
     predselect = predfile[predfile['video-id'] == videotofilter]
 
