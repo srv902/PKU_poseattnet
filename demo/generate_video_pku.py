@@ -5,6 +5,8 @@
 #
 # ffmpeg used to convert frames to video || -->  ffmpeg -r 30 -i modified_frames/0319-M/%5d.jpg -vb 20M myvideo.mpg
 #
+# ffmpeg to extract frames from video  ||  --> ffmpeg -i Predicted_0310-M.mp4 -vf fps=30 0310-M/%04d.jpg -hide_banner (a bit blurry frames)
+#
 #
 ##################################
 
@@ -17,9 +19,11 @@ import os
 import argparse
 from shutil import copyfile
 
-IMAGE_PATH = '/data/stars/user/sasharma/PKU_poseattnet/demo/original_frames'
-SAVE_PATH = '/data/stars/user/sasharma/PKU_poseattnet/demo/modified_frames'
+#IMAGE_PATH = '/data/stars/user/sasharma/PKU_poseattnet/demo/original_frames'
+#SAVE_PATH = '/data/stars/user/sasharma/PKU_poseattnet/demo/modified_frames'
 ACTION_LABEL_FILE = '../data/pku_mmd_label_map.txt'
+IMAGE_PATH = '/home/saurav/Desktop/PKU_poseattnet/demo/'
+SAVE_PATH = '/home/saurav/Desktop/PKU_poseattnet/demo/Pred'
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Parser for generating demo')
@@ -27,9 +31,14 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def get_class_name():
+def get_class_name(add_bkg=False):
     actions = pd.read_csv(ACTION_LABEL_FILE, header=None)
     classname = {}
+
+    # add background to the final prediction file for creating demo..
+    if add_bkg:
+        classname[0] = "Background"
+
     for i in range(actions.shape[0]):
         classname[i+1] = actions.iloc[i,0]
     return classname
@@ -45,7 +54,7 @@ def prepare_labels(gtfile, predfile, classnames):
     for i in range(newdf.shape[0]):
         start, end, label, conf, type = newdf.iloc[i, 1], newdf.iloc[i, 2], classnames[newdf.iloc[i, 3]], round(newdf.iloc[i, 4], 3), newdf.iloc[i, 5]
 
-        for j in range(start, end+1):
+        for j in range(start, end):
             if j not in label_dict:
                 label_dict[j] = []
                 label_dict[j].append([label, conf, type])
@@ -62,6 +71,7 @@ def create_demo(label, vidname):
 
     # assuming starting frame number for all videos is 1
     startidx, numframes = 1, len(os.listdir(os.path.join(IMAGE_PATH, vidname)))
+    lastbgthresh = 0.100
     for i in range(startidx, numframes):
         frameid = "%05d" % i
         srcfileid = os.path.join(IMAGE_PATH, vidname, str(frameid)+'.jpg')
@@ -77,9 +87,9 @@ def create_demo(label, vidname):
         labelpos = 500
         predpos = 130
         gtpos = 112
-
+       
         if i not in label.keys():
-            cv2.putText(new_window, "Prediction: Background", (predpos, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
+            cv2.putText(new_window, "Prediction: Background("+ str(lastbgthresh) +")", (predpos, labelpos + 25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
             cv2.putText(new_window, "Groundtruth: Background", (gtpos, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
             # copyfile(srcfileid, destfileid)
         else:
@@ -107,7 +117,11 @@ def create_demo(label, vidname):
                     # print("big text")
                     predpos = 70
                     gtpos = 52
-                cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (predpos, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
+                if pred1[0][0] == 'Background':
+                    lastbgthresh = pred1[0][1]    
+                    cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (predpos, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102,0), 1)
+                else:
+                    cv2.putText(new_window, "Prediction: " + pred1[0][0] + '(' + str(pred1[0][1]) + ')', (predpos, labelpos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 153), 1)
                 cv2.putText(new_window, "Groundtruth: Background", (gtpos, labelpos), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 102, 0), 1)
             elif len(gt1) == 1 and len(pred1) == 0:
                 if len(gt1[0][0]) > 30:
@@ -136,8 +150,8 @@ if __name__ == "__main__":
     gtselect = gtfile[gtfile['video-id'] == videotofilter]
     predselect = predfile[predfile['video-id'] == videotofilter]
 
-    # filtering out background..
-    predselect = predselect[predselect['label'] != 0]
+    #filtering out background.. Need to add background prob as well. TURNING OFF FOR NOW
+    #predselect = predselect[predselect['label'] != 0]
 
     print("Selected groud truth")
     print(gtselect)
@@ -146,10 +160,10 @@ if __name__ == "__main__":
     print(predselect)
 
     # get class name for the action label values
-    classnames = get_class_name()
+    classnames = get_class_name(add_bkg=True)
 
     label_annot = prepare_labels(gtselect, predselect, classnames)
-    # print("unified table of pred and gt")
-    # print(label_annot)
+    print("unified table of pred and gt")
+    print(label_annot)
 
     create_demo(label_annot, videotofilter)
