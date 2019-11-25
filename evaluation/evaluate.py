@@ -125,7 +125,7 @@ def get_distinct_segments_no_overlap(cls_probs, predictions):
     data = {'video-id': videoid, 't-start': tstart, 't-end': tend, 'label': label, 'conf': conf}
     new_prediction = pd.DataFrame.from_dict(data)
     # new_prediction = new_prediction[['video-id', 't-start', 't-end', 'label', 'conf']]
-    print(new_prediction[new_prediction['video-id'] == '0291-L'])
+    # print(new_prediction[new_prediction['video-id'] == '0291-L'])
     return new_prediction
 
 def apply_multiscale_processing():
@@ -274,11 +274,25 @@ def plot_fig(lst, ratio, ground, method):
 
 # from scipy.ndimage.filters import uniform_filter1d
 from copy import deepcopy
-def apply_mean_filter(cls_probs):
+
+def apply_mean_filter(cls_probs,k=0):
     length = cls_probs.shape[0]
     print("Number of cls_probs entries ", length)
     new_cls_probs = deepcopy(cls_probs)
 
+    if k == 0:
+        print("Mean filter not applied!")
+    elif k == 3:
+        print("Mean filter with k == 3 is applied!")
+        for i in range(1, cls_probs.shape[0]-1):
+            new_cls_probs[i] = np.average(np.vstack((cls_probs[i-1, :], cls_probs[i, :], cls_probs[i + 1, :])), axis=0)
+    elif k == 5:
+        print("Mean filter with k == 5 is applied!")
+        for i in range(2, cls_probs.shape[0]-2):
+            new_cls_probs[i] = np.average(np.vstack((cls_probs[i-2, :], cls_probs[i-1, :], cls_probs[i, :], cls_probs[i + 1, :], cls_probs[i+2, :])), axis=0)
+    else:
+        print("Invalid mean filter size specified!")
+    """
     for i in range(1, cls_probs.shape[0]-1):
         #print(cls_probs[i-1, :])
         #print(cls_probs[i, :])
@@ -288,6 +302,7 @@ def apply_mean_filter(cls_probs):
         #print("new cls probs ")
         #print(cls_probs[i])
         #break
+    """
     return new_cls_probs
 
 def get_prediction_res(idx, pred):
@@ -376,7 +391,7 @@ if __name__ == "__main__":
     # filename = 'PKU_LSTM_clsprobs_1024_poseattnet_feature_10frames_epoch8_test.pkl'  #   88.38 mAP  10 frames evaluation
     # filename = 'PKU_LSTM_clsprobs_1024_poseattnet_feature_10frames_epoch3_test.pkl'  #   87.23 mAP  10 frames evaluation
 
-
+    # Comparison of action detection methods on PKU-MMD for different combination of hyper-parameters value.
     cls_probs_dict = pickle.load(open(os.path.join(path, filename), 'rb'))
     cls_probs = []
     for i in validation_videos:
@@ -391,7 +406,8 @@ if __name__ == "__main__":
     # cls_probs = pickle.load(open(os.path.join(path, 'cls_probs_GRU.pkl'), 'rb'))
 
     # mAP reduced to 60 with k=3 and to 40 with k=5 if mean filter is applied
-    cls_probs = apply_mean_filter(cls_probs)
+    # specify k as the window size of the mean filter to be applied! ******************
+    cls_probs = apply_mean_filter(cls_probs, k=3) # value for best performance is k=3
 
     print("test_split shape ", len(test_split))
     print("cls probs shape ", cls_probs.shape)
@@ -408,8 +424,11 @@ if __name__ == "__main__":
     print("Number of ground_truth entries ", ground_truth.shape[0])
     print("Number of prediction entries ", predictions.shape[0])
 
-    print("ground_truth")
-    print(ground_truth[0:30])
+    print("predictions")
+    print(predictions[predictions['video-id'] == '0310-M'])
+
+    # print("ground_truth")
+    # print(ground_truth[0:30])
 
     # print("predictions")
     # print(predictions[0:20])
@@ -426,7 +445,7 @@ if __name__ == "__main__":
 
     # prepare the predictions as activity vs no activity (1 vs 0 at label)
     count = 0
-    gamma = 0.4
+    gamma = 0.4   # value for best performance 0.4
 
     """
     for i in range(predictions.shape[0]):
@@ -470,8 +489,9 @@ if __name__ == "__main__":
 
     predictions_with_bkg = pickle.load(open('merged_predictions.pkl', 'rb'))
 
-    print("predictions with bkg")
-    print(predictions_with_bkg)
+    # output commands to display the confidence scores of the predictions
+    # print("predictions with bkg")
+    # print(predictions_with_bkg)
 
     predictions_with_bkg = predictions_with_bkg[['label', 't-start', 't-end', 'conf', 'video-id']]
 
@@ -517,9 +537,9 @@ if __name__ == "__main__":
     a_props = [[] for x in range(number_label)]
     a_grounds = [[] for x in range(number_label)]
 
-    print("v_props ")
-    print(v_props[85])
-    print(len(v_props))
+    # print("v_props ")
+    # print(v_props[85])
+    # print(len(v_props))
     # print("vProps shep ", len(v_props))
     # print("v_ground ")
     # print(v_grounds)
@@ -538,6 +558,7 @@ if __name__ == "__main__":
     all_grounds = sum(a_grounds, [])
 
     theta = 0.1
+    print("Threshold value for temporal IoU is "+str(theta))
     AP = ap(all_props, theta, all_grounds)
     # ap = ap(final_predictions.values, ratio, ground_truth.values)
     print("ap is ", AP)
@@ -557,6 +578,4 @@ if __name__ == "__main__":
     # top3pred = get_prediction_res(idx, v_props)
     # pickle.dump(top3pred, open('top3pred.pkl', 'wb'))
     # specify the name of the file to be saved for the video based mAP
-    pickle.dump(mAP_per_video, open('map_per_video_onlyI3D.pkl', 'wb'))
-
-
+    # pickle.dump(mAP_per_video, open('map_per_video_onlyI3D.pkl', 'wb'))
